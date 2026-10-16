@@ -1,0 +1,132 @@
+import { useState } from "react";
+import { formatMoney, paymentMethods, type PaymentMethod } from "../catalog";
+import { Icon } from "../components/Icon";
+import { Scene } from "../components/Scene";
+import type { Order, PaymentResult } from "../App";
+import { TotalcoinCheckout } from "../totalcoin/TotalcoinCheckout";
+import type { TotalcoinFinishEvent /* , TotalcoinIntentionData */ } from "../totalcoin/types";
+
+interface Props {
+  order: Order;
+  onBack: () => void;
+  onFinished: (result: PaymentResult) => void;
+}
+
+export function PaymentPage({ order, onBack, onFinished }: Props) {
+  const [method, setMethod] = useState<PaymentMethod | null>(null);
+  const [receipt, setReceipt] = useState<string>();
+  // Después de pagar ya no se puede cambiar de medio.
+  const [paid, setPaid] = useState(false);
+  const { trip } = order;
+
+  // Id de la intención de pago. En una integración real lo obtiene el backend de la agencia en
+  // Totalcoin, uno por reserva; en este ejemplo sale de VITE_INTENTION_ID.
+  const intentionId = import.meta.env.VITE_INTENTION_ID?.trim();
+
+  // Antes el checkout creaba la intención con estos datos (sin uso desde el 2026-10-16).
+  // const intention: TotalcoinIntentionData = {
+  //   merchantId: import.meta.env.VITE_MERCHANT_ID,
+  //   externalReference: order.reference,
+  //   amount: trip.price,
+  //   concept: `Paquete ${trip.destination} ${trip.nights} noches`,
+  // };
+
+  // El checkout no navega: cuando el comprador toca "Volver al comercio", la agencia decide adónde ir.
+  // Los eventos solo actualizan la interfaz: antes de emitir los vouchers, el backend de la agencia
+  // confirma el pago con la consulta de estado de Totalcoin.
+  const handleFinish = ({ reason }: TotalcoinFinishEvent) => {
+    if (reason === "success") onFinished({ receipt });
+    else setMethod(null);
+  };
+
+  return (
+    <div className="pay-layout">
+      <section>
+        <div className="pay-head">
+          <div>
+            <h1>¿Cómo querés pagar?</h1>
+            <p className="muted">
+              Reserva <strong>{order.reference}</strong>
+            </p>
+          </div>
+          <button className="link" onClick={onBack} disabled={paid}>
+            ← Volver a los paquetes
+          </button>
+        </div>
+
+        <div className="card">
+          {method === null ? (
+            <ul className="methods">
+              {paymentMethods.map((m) => (
+                <li key={m.id}>
+                  <MethodRow method={m} disabled={trip.price > m.max} onClick={() => setMethod(m)} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <>
+              <div className="selected-head">
+                <MethodRow method={method} />
+                <button className="btn btn-ghost" onClick={() => setMethod(null)} disabled={paid}>
+                  Cambiar medio
+                </button>
+              </div>
+
+              {!method.totalcoin ? (
+                <p className="simulated muted">Medio simulado: el único integrado es Tarjeta vía TotalCoin.</p>
+              ) : !intentionId ? (
+                <p>Falta VITE_INTENTION_ID: indicá el id de una intención vigente (ver README).</p>
+              ) : (
+                <TotalcoinCheckout
+                  intentionId={intentionId}
+                  onSuccess={(event) => {
+                    setReceipt(event.receipt.reference);
+                    setPaid(true);
+                  }}
+                  onError={(event) => console.warn("Totalcoin:", event)}
+                  onFinish={handleFinish}
+                />
+              )}
+            </>
+          )}
+        </div>
+      </section>
+
+      <aside className="card summary">
+        <Scene trip={trip} />
+        <p className="trip-region">{trip.region}</p>
+        <h2>{trip.destination}</h2>
+        <p className="muted">{trip.nights} noches</p>
+        <div className="summary-total">
+          <span>Total</span>
+          <span>{formatMoney(trip.price)}</span>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+/** Con `onClick` es un botón; sin él, el encabezado del medio elegido. */
+function MethodRow({ method, disabled, onClick }: { method: PaymentMethod; disabled?: boolean; onClick?: () => void }) {
+  const content = (
+    <>
+      <span className="method-icon">
+        <Icon name={method.icon} />
+      </span>
+      <span className="method-text">
+        <strong>{method.title}</strong>
+        <span className="muted">Vía {method.via}</span>
+      </span>
+      <span className="method-limits">
+        <span>Mín.: {formatMoney(method.min)}</span>
+        <span>Máx.: {formatMoney(method.max)}</span>
+      </span>
+    </>
+  );
+  if (!onClick) return <div className="method method-static">{content}</div>;
+  return (
+    <button className="method" disabled={disabled} onClick={onClick}>
+      {content}
+    </button>
+  );
+}
