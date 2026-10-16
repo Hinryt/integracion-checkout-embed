@@ -1,10 +1,29 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { formatMoney, paymentMethods, type PaymentMethod } from "../catalog";
 import { Icon } from "../components/Icon";
 import { Scene } from "../components/Scene";
 import type { Order, PaymentResult } from "../App";
 import { TotalcoinCheckout } from "../totalcoin/TotalcoinCheckout";
 import type { TotalcoinFinishEvent /* , TotalcoinIntentionData */ } from "../totalcoin/types";
+
+/** Último id usado, para no tener que pegarlo en cada recarga. */
+const STORAGE_KEY = "prueba-tienda:intentionId";
+
+function readStoredId() {
+  try {
+    return localStorage.getItem(STORAGE_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function storeId(id: string) {
+  try {
+    localStorage.setItem(STORAGE_KEY, id);
+  } catch {
+    // Sin storage (modo privado, etc.): no pasa nada, solo no se recuerda.
+  }
+}
 
 interface Props {
   order: Order;
@@ -20,8 +39,17 @@ export function PaymentPage({ order, onBack, onFinished }: Props) {
   const { trip } = order;
 
   // Id de la intención de pago. En una integración real lo obtiene el backend de la agencia en
-  // Totalcoin, uno por reserva; en este ejemplo sale de VITE_INTENTION_ID.
-  const intentionId = import.meta.env.VITE_INTENTION_ID?.trim();
+  // Totalcoin, uno por reserva; para las pruebas se pega en el campo de arriba (o sale de
+  // VITE_INTENTION_ID). `draftId` es lo que se escribe; `intentionId`, el que usa el checkout.
+  const [draftId, setDraftId] = useState(() => readStoredId() || (import.meta.env.VITE_INTENTION_ID?.trim() ?? ""));
+  const [intentionId, setIntentionId] = useState(draftId.trim());
+
+  const applyId = (e: FormEvent) => {
+    e.preventDefault();
+    const id = draftId.trim();
+    setIntentionId(id);
+    storeId(id);
+  };
 
   // Antes el checkout creaba la intención con estos datos (sin uso desde el 2026-10-16).
   // const intention: TotalcoinIntentionData = {
@@ -54,6 +82,24 @@ export function PaymentPage({ order, onBack, onFinished }: Props) {
           </button>
         </div>
 
+        <form className="card intention-form" onSubmit={applyId}>
+          <label htmlFor="intention-id">Id de la intención (prueba)</label>
+          <div className="intention-row">
+            <input
+              id="intention-id"
+              value={draftId}
+              onChange={(e) => setDraftId(e.target.value)}
+              placeholder="GUID de la intención"
+              spellCheck={false}
+              autoComplete="off"
+              disabled={paid}
+            />
+            <button className="btn btn-ghost" type="submit" disabled={paid || draftId.trim() === intentionId}>
+              Usar
+            </button>
+          </div>
+        </form>
+
         <div className="card">
           {method === null ? (
             <ul className="methods">
@@ -75,9 +121,11 @@ export function PaymentPage({ order, onBack, onFinished }: Props) {
               {!method.totalcoin ? (
                 <p className="simulated muted">Medio simulado: el único integrado es Tarjeta vía TotalCoin.</p>
               ) : !intentionId ? (
-                <p>Falta VITE_INTENTION_ID: indicá el id de una intención vigente (ver README).</p>
+                <p className="simulated muted">Pegá arriba el id de una intención vigente y tocá "Usar".</p>
               ) : (
+                // La key reinicia el iframe cuando cambia el id: el SDK no reacciona a cambios de props.
                 <TotalcoinCheckout
+                  key={intentionId}
                   intentionId={intentionId}
                   onSuccess={(event) => {
                     setReceipt(event.receipt.reference);

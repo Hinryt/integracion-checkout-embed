@@ -99,3 +99,13 @@ h1, h2, h3 { line-height: 1.2; margin: 0; }
 .confirm dl > div { display: flex; justify-content: space-between; font-size: 14px; }
 .confirm dt { color: var(--muted); }
 .confirm dd { margin: 0; }
+
+/* Campo para el id de la intención (solo pruebas) */
+.intention-form { margin-bottom: 16px; }
+.intention-form label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.intention-row { display: flex; gap: 8px; }
+.intention-row input {
+  flex: 1; min-width: 0; font: inherit; font-size: 16px; font-family: ui-monospace, Consolas, monospace;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text);
+}
+.intention-row input:focus { outline: 2px solid var(--brand); outline-offset: -1px; }
