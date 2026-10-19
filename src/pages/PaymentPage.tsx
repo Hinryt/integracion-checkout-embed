@@ -39,9 +39,9 @@ export function PaymentPage({ order, onBack, onFinished }: Props) {
   const { trip } = order;
 
   // Id de la intención de pago. En una integración real lo obtiene el backend de la agencia en
-  // Totalcoin, uno por reserva; para las pruebas se pega en el campo de arriba (o sale de
-  // VITE_INTENTION_ID). `draftId` es lo que se escribe; `intentionId`, el que usa el checkout.
-  const [draftId, setDraftId] = useState(() => readStoredId() || (import.meta.env.VITE_INTENTION_ID?.trim() ?? ""));
+  // Totalcoin, uno por reserva; para las pruebas se pega en el campo de arriba.
+  // `draftId` es lo que se escribe; `intentionId`, el que usa el checkout.
+  const [draftId, setDraftId] = useState(readStoredId);
   const [intentionId, setIntentionId] = useState(draftId.trim());
 
   const applyId = (e: FormEvent) => {

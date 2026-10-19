@@ -80,10 +80,10 @@ export const trips: Trip[] = [
 ];
 
 export const paymentMethods: PaymentMethod[] = [
-  { id: "totalcoin", title: "Tarjeta de crédito o débito", via: "TotalCoin", icon: "card", min: 1000, max: 1000000, totalcoin: true },
+  { id: "totalcoin", title: "Tarjeta de crédito, débito o prepaga", via: "Totalcoin", icon: "card", min: 1000, max: 1000000, totalcoin: true },
   { id: "bind-transfer", title: "Transferencia bancaria", via: "Bind", icon: "bank", min: 1000, max: 3000000 },
   { id: "mp-account", title: "Dinero en cuenta", via: "MercadoPago", icon: "wallet", min: 1000, max: 3000000 },
-  { id: "tc-qr", title: "Depositar con QR", via: "TotalCoin", icon: "qr", min: 1000, max: 1500000 },
+  { id: "tc-qr", title: "Depositar con QR", via: "Totalcoin", icon: "qr", min: 1000, max: 1500000 },
   { id: "mp-credit", title: "Tarjeta de crédito", via: "MercadoPago", icon: "card", min: 1000, max: 100000 },
 ];
 

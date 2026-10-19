@@ -8,12 +8,12 @@ Agencia de viajes ficticia (Vite + React + TypeScript) que cobra sus paquetes co
 |---|---|
 | `src/totalcoin/TotalcoinCheckout.tsx` | Componente que carga el SDK, monta el checkout y lo destruye al desmontarse. Se puede copiar tal cual a tu proyecto. |
 | `src/totalcoin/types.ts` | Tipos de los datos del pago y de los eventos. |
-| `src/pages/PaymentPage.tsx` | Uso: monta el checkout con el id de la intención al elegir "Tarjeta de crédito o débito vía TotalCoin" y reacciona a los eventos. El id sale de `VITE_INTENTION_ID`. Es el único medio real; el resto son simulados. |
+| `src/pages/PaymentPage.tsx` | Uso: monta el checkout con el id de la intención al elegir "Tarjeta de crédito o débito vía Totalcoin" y reacciona a los eventos. El id se pega en un campo de esa página. Es el único medio real; el resto son simulados. |
 | `src/App.tsx`, `src/pages/CatalogPage.tsx`, `src/pages/ConfirmationPage.tsx` | Catálogo, navegación y confirmación de la agencia. No dependen de Totalcoin. |
 
 ## Cómo funciona
 
-1. Tu backend obtiene en Totalcoin el id de la intención de pago, uno por orden. Las credenciales de la API nunca van al navegador. En el ejemplo, el id se configura en `VITE_INTENTION_ID`.
+1. Tu backend obtiene en Totalcoin el id de la intención de pago, uno por orden. Las credenciales de la API nunca van al navegador. En el ejemplo, el id se pega en un campo de la página de pago.
 2. `<TotalcoinCheckout intentionId={…} />` carga `{VITE_CHECKOUT_URL}/sdk/v1/checkout.js` y crea el iframe del checkout con esa intención. El SDK se carga siempre desde el dominio de Totalcoin, no se incluye en tu bundle.
    - Si la intención vence o ya se pagó, el checkout lo informa con `onError`: para volver a cobrar, creá otra intención y volvé a montar el checkout.
 3. El comprador paga dentro del iframe. Eventos:
@@ -31,19 +31,13 @@ Los eventos sirven para actualizar la interfaz, no para confirmar el pago: llega
    npm install
    ```
 
-2. Creá `.env.local` con el id de una intención vigente de test (en una integración real lo obtiene tu backend):
-
-   ```
-   VITE_INTENTION_ID=<GUID de la intención>
-   ```
-
-3. Levantá la app apuntando al ambiente de test (ltest). Toma el checkout de `.env.ltest`:
+2. Levantá la app apuntando al ambiente de test (ltest). Toma el checkout de `.env.ltest`:
 
    ```bash
    npm run dev:ltest
    ```
 
-4. Abrí http://localhost:5175, elegí un paquete y "Tarjeta de crédito o débito vía TotalCoin".
+3. Abrí http://localhost:5175, elegí un paquete, pegá el id de una intención vigente de test (en una integración real lo obtiene tu backend) y elegí "Tarjeta de crédito o débito vía Totalcoin". El último id usado se recuerda en el navegador.
 
 Para apuntar a otro checkout (por ejemplo, uno local en `http://localhost:4173`), poné `VITE_CHECKOUT_URL` en `.env.local` y usá `npm run dev`. Las variables están documentadas en `.env.example`.
 
