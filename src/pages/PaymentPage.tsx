@@ -119,7 +119,7 @@ export function PaymentPage({ order, onBack, onFinished }: Props) {
               </div>
 
               {!method.totalcoin ? (
-                <p className="simulated muted">Medio simulado: el único integrado es Tarjeta vía TotalCoin.</p>
+                <p className="simulated muted">Medio simulado: el único integrado es Tarjeta vía totalCoin.</p>
               ) : !intentionId ? (
                 <p className="simulated muted">Pegá arriba el id de una intención vigente y tocá "Usar".</p>
               ) : (
