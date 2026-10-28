@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --port 5175 --strictPort",
     "dev:ltest": "vite --mode ltest --port 5175 --strictPort",
+    "dev:prod": "vite --mode production --port 5175 --strictPort",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 5175 --strictPort"
   },

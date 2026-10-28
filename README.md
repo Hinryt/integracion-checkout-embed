@@ -37,6 +37,8 @@ Los eventos sirven para actualizar la interfaz, no para confirmar el pago: llega
    npm run dev:ltest
    ```
 
+   Para apuntar a producción usá `npm run dev:prod`, que toma el checkout de `.env.production` (`https://checkoutembedded.totalcoin.com`). `npm run build` también usa ese archivo.
+
 3. Abrí http://localhost:5175, elegí un paquete, pegá el id de una intención vigente de test (en una integración real lo obtiene tu backend) y elegí "Tarjeta de crédito o débito vía Totalcoin". El último id usado se recuerda en el navegador.
 
 Para apuntar a otro checkout (por ejemplo, uno local en `http://localhost:4173`), poné `VITE_CHECKOUT_URL` en `.env.local` y usá `npm run dev`. Las variables están documentadas en `.env.example`.
